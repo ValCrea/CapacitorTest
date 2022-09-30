@@ -3,6 +3,11 @@ npx cap copy
 npx cap sync
 npx cap open
 npx cap run?
+
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 -->
 
 <script setup lang="ts">
@@ -12,6 +17,17 @@ import type { Ref } from "vue";
 import DynamicText from "@/components/DynamicText.vue";
 import { Geolocation } from "@capacitor/geolocation";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+
+onMounted(async () => {
+  try {
+    await Filesystem.mkdir({
+      path: "GeoGet",
+      directory: Directory.Documents,
+    });
+  } catch {
+    console.log("GeoGet already exists");
+  }
+});
 
 const loc: Ref<{ lat: number; lon: number } | null> = ref(null);
 const errorLoc = ref("");
@@ -47,7 +63,8 @@ const saveLocation = async () => {
 
     locationList.value = await readLocations();
   } catch (err: any) {
-    errorFile.value = "Coludn't save Location";
+    if (err && err.message) errorFile.value = err.message;
+    else errorFile.value = "Coludn't save Location";
   }
 };
 
@@ -75,7 +92,8 @@ const readLocations = async () => {
     }
     return locations;
   } catch (err: any) {
-    errorFile.value = "Coludn't read Locations";
+    if (err && err.message) errorFile.value = err.message;
+    else errorFile.value = "Coludn't read Locations";
     return [];
   }
 };
@@ -92,7 +110,8 @@ const clearLocations = async () => {
 
     locationList.value = await readLocations();
   } catch (err: any) {
-    errorFile.value = "Coludn't clear Locations";
+    if (err && err.message) errorFile.value = err.message;
+    else errorFile.value = "Coludn't clear Locations";
   }
 };
 onMounted(async () => {
